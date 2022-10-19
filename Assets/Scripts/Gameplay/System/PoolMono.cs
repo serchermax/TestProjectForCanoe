@@ -63,5 +63,18 @@ namespace Gameplay
             }
             else return CreateObject(active);
         }
+        public T GetObjectFromPool(out bool isNew, bool active = true)
+        {
+            if (TryGetObjectFromPool(out var poolObject, active))
+            {
+                isNew = false;
+                return poolObject;
+            }
+            else
+            {
+                isNew = true;
+                return CreateObject(active);
+            }
+        }
     }
 }

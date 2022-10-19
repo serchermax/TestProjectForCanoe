@@ -23,7 +23,6 @@ namespace Gameplay
         private float _timer;
         private float _currentMaxValue;
         private bool _stopSpawn = false;
-        private int _startEnemiesInPoolCount = 3;
         private Dictionary<object, PoolMono<EnemyCore>> _enemiesPool;
 
         private Transform _container;
@@ -54,7 +53,7 @@ namespace Gameplay
 
             for (int i = 0; i < _enemyPacks.Length; i++)
                 if (!_enemiesPool.ContainsKey(_enemyPacks[i].Enemy)) 
-                    _enemiesPool.Add(_enemyPacks[i].Enemy, new PoolMono<EnemyCore>(_enemyPacks[i].Enemy, _startEnemiesInPoolCount, _container));
+                    _enemiesPool.Add(_enemyPacks[i].Enemy, new PoolMono<EnemyCore>(_enemyPacks[i].Enemy, 0, _container));
 
             Spawn();
         }
@@ -80,8 +79,7 @@ namespace Gameplay
             while (value < _currentMaxValue)
             {
                 if (TryGetEnemy(out EnemyCore enemy, ref value))
-                {
-                    enemy.OnDestroy += () => EnemyDie(enemy);
+                {                    
                     enemy.transform.position = GetSpawnPosition();
                     enemy.transform.LookAt(_player.position);
                 }
@@ -92,13 +90,16 @@ namespace Gameplay
         private bool TryGetEnemy(out EnemyCore enemy, ref float value)
         {
             enemy = null;
+            EnemyCore temp = null;
             ShuffleArray(ref _enemyPacks);
 
             for (int i = 0; i < _enemyPacks.Length; i++)
                 if (_enemyPacks[i].StartSpawnFromWave <= Wave && _enemyPacks[i].Value + value <= _currentMaxValue)
                 {
-                    enemy = _enemiesPool[_enemyPacks[i].Enemy].GetObjectFromPool();
+                    temp = _enemiesPool[_enemyPacks[i].Enemy].GetObjectFromPool(out bool isNew);
+                    if (isNew) temp.OnDestroy += () => EnemyDie(temp);
                     value += _enemyPacks[i].Value;
+                    enemy = temp;
                     break;
                 }
             return enemy != null;
@@ -106,7 +107,6 @@ namespace Gameplay
 
         private void EnemyDie(EnemyCore enemy)
         {
-            enemy.OnDestroy -= () => EnemyDie(enemy);
             OnEnemyDie?.Invoke(enemy);
         }
 

@@ -50,7 +50,7 @@ MonoBehaviour:
   _bonus: {fileID: 458572273385361868}
   _impact: {fileID: 457774169603406504}
   _timeAfterImpact: 2
-  _energyTime: 10
+  _energyTime: 7
 --- !u!135 &5351753682213270105
 SphereCollider:
   m_ObjectHideFlags: 0
